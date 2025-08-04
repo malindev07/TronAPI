@@ -9,7 +9,7 @@ ifeq ($(OS),Windows_NT)
     RM = rd /s /q
     RUN_CMD = $(PYTHON_RUN) main.py
 else
-    #macOS/Linux
+    #macOS
     PYTHON = python3
     VENV_ACTIVATE = source $(VENV_NAME)/bin/activate
     PYTHON_RUN = $(VENV_NAME)/bin/python
