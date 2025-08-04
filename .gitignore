@@ -2,7 +2,6 @@ __pycache__/
 *.py[cod]
 *.log
 *.sqlite
-.env
 venv/
 .idea/
 .DS_Store
