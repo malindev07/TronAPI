@@ -8,17 +8,14 @@
 # Клонировать репозиторий
 git clone https://github.com/malindev07/TronAPI.git
 cd TronAPI
-```
+
 # Установка виртуального окружения и зависимостей
-```bash
 make install
-```
+
 # Запустить сервис
-```bash
 make run
-```
+
 # Запустить тесты
-```bash
 make test
 ```
 > [!NOTE]
