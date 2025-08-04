@@ -1,30 +1,39 @@
-import asyncio
 from dataclasses import dataclass
+from typing import Sequence
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
-from repository.db_helper import db_helper
-from repository.models import WalletInfo
+from api.schema import WalletInfoSchema
+from repository.models import WalletInfoModel
+from services.converter import Converter
 
 
 @dataclass
 class RepositoryORM:
-    session_factory: async_sessionmaker[AsyncSession] = db_helper.session_factory
+    converter: Converter
+    session_factory: async_sessionmaker[AsyncSession]
 
-    async def create(self, model: WalletInfo):
+    async def create(self, schema: WalletInfoSchema) -> WalletInfoSchema:
         try:
+            model: WalletInfoModel = await self.converter.schema_to_model(schema)
             async with self.session_factory() as session:
                 session.add(model)
                 await session.commit()
+                return await self.converter.model_to_schema(model)
         except Exception as e:
             await session.rollback()
             raise e
-        return model
 
-
-# a = RepositoryORM()
-# asyncio.run(
-#     a.create(
-#         WalletInfo(address="sdfsfsfdfs", balance=0.0, bandwidth=121241, energy=12414)
-#     )
-# )
+    async def get_with_pagination(
+        self, offset: int, limit: int
+    ) -> Sequence[WalletInfoSchema]:
+        try:
+            async with self.session_factory() as session:
+                query = select(WalletInfoModel).offset(offset).limit(limit)
+                res = await session.execute(query)
+                models = res.scalars().all()
+                if models:
+                    return await self.converter.models_seq_to_schema_seq(models=models)
+        except Exception as e:
+            raise e

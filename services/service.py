@@ -1,48 +1,83 @@
 from dataclasses import dataclass
+from typing import Sequence
+
 from httpx import AsyncClient
-from api.schema import WalletInfoSchema
+from api.schema import WalletInfoSchema, WalletNotFoundSchema
+from repository.repository_orm import RepositoryORM
+from services.converter import Converter
 
 
-# @dataclass
-# class WalletInfo:
-#     addr: str
-#     balance: float = 0.0
-#     bandwidth: int = 0
-#     energy: int = 0
+@dataclass
+class WalletParamsAttrs:
+    balance: str = "balance"
+    bandwidth: str = "bandwidth"
+    netUsed: str = "netUsed"
+    netLimit: str = "netLimit"
+    freeNetLimit: str = "freeNetLimit"
+    freeNetUsed: str = "freeNetUsed"
+    energyLimit: str = "energyLimit"
+    energyUsed: str = "energyUsed"
 
 
 @dataclass
 class TronWalletService:
-    _url: str
+    repo: RepositoryORM
+    _url: str = "https://apilist.tronscanapi.com/api"
 
-    async def get_bandwidth_energy_balance(self, addr: str) -> WalletInfoSchema:
+    async def check_bandwidth_energy_balance(
+        self, addr: str
+    ) -> WalletInfoSchema | WalletNotFoundSchema:
         # TODO Уточнить у коуча
         async with AsyncClient() as client:
             response = await client.get(url=f"{self._url}/accountv2?address={addr}")
             params = response.json()
+            if not params:
+                return WalletNotFoundSchema(address=addr)
 
             wi = WalletInfoSchema(
-                address=addr, balance=float(params["balance"] / 1000000)
+                address=addr,
+                balance=float(params[WalletParamsAttrs.balance] / 1000000),
             )
 
-            if "netUsed" in params["bandwidth"] and "netLimit" in params["bandwidth"]:
+            if (
+                WalletParamsAttrs.netUsed in params[WalletParamsAttrs.bandwidth]
+                and WalletParamsAttrs.netLimit in params[WalletParamsAttrs.bandwidth]
+            ):
                 wi.bandwidth = (
-                    int(params["bandwidth"]["netLimit"])
-                    - int(params["bandwidth"]["netUsed"])
+                    int(params[WalletParamsAttrs.bandwidth][WalletParamsAttrs.netLimit])
+                    - int(
+                        params[WalletParamsAttrs.bandwidth][WalletParamsAttrs.netUsed]
+                    )
                     + (
-                        int(params["bandwidth"]["freeNetLimit"])
-                        - int(params["bandwidth"]["freeNetUsed"])
+                        int(
+                            params[WalletParamsAttrs.bandwidth][
+                                WalletParamsAttrs.freeNetLimit
+                            ]
+                        )
+                        - int(
+                            params[WalletParamsAttrs.bandwidth][
+                                WalletParamsAttrs.freeNetUsed
+                            ]
+                        )
                     )
                 )
             if (
-                "energyUsed" in params["bandwidth"]
-                and "energyLimit" in params["bandwidth"]
+                WalletParamsAttrs.energyUsed in params[WalletParamsAttrs.bandwidth]
+                and WalletParamsAttrs.energyLimit in params[WalletParamsAttrs.bandwidth]
             ):
-                energy = int(params["bandwidth"]["energyLimit"]) - int(
-                    params["bandwidth"]["energyUsed"]
+                energy = int(
+                    params[WalletParamsAttrs.bandwidth][WalletParamsAttrs.energyLimit]
+                ) - int(
+                    params[WalletParamsAttrs.bandwidth][WalletParamsAttrs.energyUsed]
                 )
                 if energy < 0:
                     wi.energy = 0
                 else:
                     wi.energy = energy
-            return wi
+
+            return await self.repo.create(wi)
+
+    async def get_with_pagination(
+        self, offset: int, limit: int
+    ) -> Sequence[WalletInfoSchema]:
+        return await self.repo.get_with_pagination(offset=offset, limit=limit)

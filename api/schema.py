@@ -1,6 +1,11 @@
 from pydantic import BaseModel
 
 
+class WalletNotFoundSchema(BaseModel):
+    address: str
+    msg: str = "Not found"
+
+
 class WalletInfoSchema(BaseModel):
     address: str
     balance: float = 0.0

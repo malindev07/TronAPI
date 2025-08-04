@@ -8,8 +8,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from repository.models.base import Base
 
 
-class WalletInfo(Base):
-    __tablename__ = "cars"
+class WalletInfoModel(Base):
+    __tablename__ = "wallet_info"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     address: Mapped[str] = mapped_column(nullable=False, unique=False)
