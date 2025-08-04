@@ -4,7 +4,6 @@ from typing import Sequence
 from httpx import AsyncClient
 from api.schema import WalletInfoSchema, WalletNotFoundSchema
 from repository.repository_orm import RepositoryORM
-from services.converter import Converter
 
 
 @dataclass
@@ -27,7 +26,6 @@ class TronWalletService:
     async def check_bandwidth_energy_balance(
         self, addr: str
     ) -> WalletInfoSchema | WalletNotFoundSchema:
-        # TODO Уточнить у коуча
         async with AsyncClient() as client:
             response = await client.get(url=f"{self._url}/accountv2?address={addr}")
             params = response.json()

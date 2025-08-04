@@ -35,5 +35,7 @@ class RepositoryORM:
                 models = res.scalars().all()
                 if models:
                     return await self.converter.models_seq_to_schema_seq(models=models)
+                else:
+                    return []
         except Exception as e:
             raise e
