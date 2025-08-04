@@ -17,5 +17,5 @@ class WalletInfoModel(Base):
     bandwidth: Mapped[int] = mapped_column(nullable=False)
     energy: Mapped[int] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        server_default=func.now(), nullable=False
+        server_default=func.now(), nullable=False, index=True
     )

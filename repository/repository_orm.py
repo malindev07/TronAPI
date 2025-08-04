@@ -30,7 +30,12 @@ class RepositoryORM:
     ) -> Sequence[WalletInfoSchema]:
         try:
             async with self.session_factory() as session:
-                query = select(WalletInfoModel).offset(offset).limit(limit)
+                query = (
+                    select(WalletInfoModel)
+                    .order_by(WalletInfoModel.created_at.desc())
+                    .offset(offset)
+                    .limit(limit)
+                )
                 res = await session.execute(query)
                 models = res.scalars().all()
                 if models:
