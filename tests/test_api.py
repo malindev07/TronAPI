@@ -1,8 +1,9 @@
 import pytest
+from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_check_bandwidth_energy_balance_valid_addr(client):
+async def test_check_bandwidth_energy_balance_valid_addr(client: AsyncClient) -> None:
     response = await client.post(
         "/wallet/resources",
         params={"address": "TQAXVqxCHPGEAQMn945kta22FUicd28SLo"},  # valid addr
@@ -14,7 +15,7 @@ async def test_check_bandwidth_energy_balance_valid_addr(client):
 
 
 @pytest.mark.asyncio
-async def test_check_bandwidth_energy_balance_invalid_addr(client):
+async def test_check_bandwidth_energy_balance_invalid_addr(client: AsyncClient) -> None:
     response = await client.post(
         "/wallet/resources",
         params={"address": "TQAXVqxCHPGEAQMn925kta22FUicd28SLo"},  # invalid addr

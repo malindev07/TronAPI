@@ -1,5 +1,6 @@
 import pytest
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 from api.schema import WalletInfoSchema
 from repository.models import WalletInfoModel
@@ -8,7 +9,7 @@ from services.converter import Converter
 
 
 @pytest.mark.asyncio
-async def test_save_in_db(db_session_factory):
+async def test_save_in_db(db_session_factory: async_sessionmaker[AsyncSession]) -> None:
     addr = "TQAXVqxCHPGEAQMn945kta22FUicd28SLo"
     converter = Converter()
     repo = RepositoryORM(converter=converter, session_factory=db_session_factory)

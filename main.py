@@ -1,4 +1,5 @@
 import os
+from typing import AsyncGenerator, Any
 
 import uvicorn
 from contextlib import asynccontextmanager
@@ -15,11 +16,11 @@ load_dotenv()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[dict[str, TronWalletService], Any]:
     db_helper = DataBaseHelper(
         engine_url=f"{os.getenv("DB_NAME")}+{os.getenv("DB_ENGINE")}:///{os.getenv("DB_PATH")}"
     )
-    
+
     await db_helper.init_db(is_drop=True if os.getenv("DB_DROP") == "1" else False)
     converter = Converter()
     repo = RepositoryORM(converter=converter, session_factory=db_helper.session_factory)
